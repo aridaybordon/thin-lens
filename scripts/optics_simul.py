@@ -1,5 +1,6 @@
 from matplotlib.widgets import Slider
 import matplotlib.pyplot as plt
+import time
 
 import numpy as np
 
@@ -18,11 +19,11 @@ class Optics_simul:
         self.draw_axis(self.f_ob, self.f_im)
         self.create_slider()
 
-        self.slider.on_changed(self.updater)
+        self.slider.on_changed(self.slider_updater)
 
         self.draw_text()
         self.create_labels()
-        self.updater(val=1)
+        self.slider_updater(val=1)
 
         plt.show()
         plt.ion()
@@ -31,26 +32,29 @@ class Optics_simul:
 
     def compute_im_pos(self):
         self.s_im = 1 / (1/self.s_ob + 1/self.f_im)
-        self.y_im      = self.s_im*self.y_ob / self.s_ob
+        self.y_im = self.s_im*self.y_ob / self.s_ob
 
-    def updater(self, val):
-        if self.slider.val == self.f_ob:
-            self.s_ob = 0.99*self.slider.val    # Evitar punto singular
-        else:
-            self.s_ob = self.slider.val
+    def slider_updater(self, val):
+        current = self.s_ob
 
+        self.s_ob += (val - current)
         self.compute_im_pos()
+
+        self.refresh_plot()
+        self.update_plot()
+
+    def refresh_plot(self):
         self.remove_lines()
         self.reset_labels()
-
         self.draw_axis(self.f_ob, self.f_im)
-        
+
+    def update_plot(self):
         self.update_labels()
         self.update_object()
         self.update_image()
-        self.draw_light_rays()        
+        self.draw_light_rays()   
 
-        self.fig.canvas.draw()
+        self.fig.canvas.draw() 
 
     def create_figure(self):
         fig, ax = plt.subplots(figsize=(6, 4))
@@ -116,7 +120,7 @@ class Optics_simul:
         
         else:
             # First line
-            l = self.draw_line_from_two_points(-self.xmax, 0, [[self.s_ob, self.y_ob], [self.f_ob, 0]], '-r')
+            l = self.draw_line_from_two_points(-self.xmax, 0, [[self.s_ob, self.y_ob], [self.f_ob, 0]], '.-r')
             self.draw_line_from_two_points(0, self.xmax, [[0, l[0]]], '-r')
             self.draw_line_from_two_points(-self.xmax, 0, [[0, l[0]]], '--r')
 
