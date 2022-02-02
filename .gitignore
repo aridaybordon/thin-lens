@@ -12,3 +12,6 @@ env/
 # Dist and build folders
 dist/
 build/
+
+# Images
+*.png
